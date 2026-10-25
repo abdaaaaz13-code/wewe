@@ -126,10 +126,12 @@ function list(){const L=$('#list');L.innerHTML='';chats.forEach(c=>{const d=docu
  d.children[0].onclick=()=>{cur=c;render();$('#dr').hidden=true};
  d.children[1].onclick=()=>{chats=chats.filter(z=>z!==c);if(cur===c)cur=null;sv();list();render()};L.appendChild(d)})}
 function reveal(b,t){return new Promise(res=>{let i=0;(function st(){if(ctl.signal.aborted)return res();i=Math.min(t.length,i+3);part=t.slice(0,i);b.innerHTML=md(part)+(i<t.length?CARET:'');sc();i<t.length?setTimeout(st,14):res()})()})}
-async function gem(){let k='';try{k=localStorage.getItem('wewe_k')||''}catch(e){}
+async function gem(){for(let a=0;;a++){try{return await gem1()}catch(e){const m=String(e&&e.message||'');if(a<3&&/high demand|overloaded|unavailable|try again|429|503/i.test(m)){await sleep(2500*(a+1));if(ctl.signal.aborted)throw e;continue}if(/high demand/i.test(m))throw new Error('الخدمة مزدحمة الحين، جرّب بعد دقيقة.');throw e}}}
+async function gem1(){let k='';try{k=localStorage.getItem('wewe_k')||''}catch(e){}
  if(!k)throw new Error('أضف مفتاح الذكاء من القائمة أول.');
+ if(k.startsWith('gsk_')){const r=await Promise.race([fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+k},body:JSON.stringify({model:'openai/gpt-oss-120b',messages:[{role:'system',content:SYS}].concat(cur.msgs.map(m=>({role:m.r==='user'?'user':'assistant',content:m.c})))}),signal:ctl.signal}),new Promise((_,j)=>setTimeout(()=>j(new Error('تأخر الرد كثير. تأكد من النت.')),40000))]);const j=await r.json();if(!r.ok)throw new Error(j.error&&j.error.message||'خطأ بالاتصال');return j.choices[0].message.content||''}
  const body={systemInstruction:{parts:[{text:SYS}]},contents:cur.msgs.map(m=>({role:m.r==='user'?'user':'model',parts:[{text:m.c}]}))};
- const r=await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key='+encodeURIComponent(k),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),signal:ctl.signal});
+ const r=await Promise.race([fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key='+encodeURIComponent(k),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),signal:ctl.signal}),new Promise((_,j)=>setTimeout(()=>j(new Error('تأخر الرد كثير. تأكد من النت أو جرّب بدون VPN.')),40000))]);
  const j=await r.json();if(!r.ok)throw new Error(j.error&&j.error.message||'خطأ بالاتصال');
  return j.candidates[0].content.parts.map(p=>p.text||'').join('')}
 async function ask(d=0){busy=true;part='';ctl=new AbortController();upGo();await sleep(d);setBusy(true);
@@ -157,7 +159,7 @@ $('#new').onclick=nw;$('#nw').onclick=nw;
 $('#menu').onclick=()=>{list();$('#dr').hidden=false};
 $('#dr').onclick=e=>{if(e.target.id==='dr')$('#dr').hidden=true};
 $('#clr').onclick=()=>{if(confirm('تمسح كل المحادثات؟')){chats=[];cur=null;sv();render();list()}};
-$('#key').onclick=()=>{const k=prompt('الصق مفتاح Gemini API هنا');if(k){try{localStorage.setItem('wewe_k',k.trim())}catch(e){}}};
+$('#key').onclick=()=>{const k=prompt('الصق مفتاح الذكاء هنا (Gemini أو Groq)');if(k){try{localStorage.setItem('wewe_k',k.trim())}catch(e){}}};
 const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
 function toast(t){const o=$('#toast');if(o)o.remove();const d=document.createElement('div');d.id='toast';d.textContent=t;document.body.appendChild(d);setTimeout(()=>d.remove(),3800)}
 let rec=null;
