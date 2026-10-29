@@ -2,7 +2,7 @@
 // 1) المفاتيح: الصق مفتاحك بين علامتي التنصيص "" (واحد منهم يكفي، والاثنان أفضل)
 window.WEWE_KEYS = {
   groq: "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",
-  gemini: "AQ.Ab8RN6Lq8hJxbOn6ZuCtJVxUY-8eKe-1J7rGZ7ic3nFoYA8kqQ",
+  gemini: "AQ.Ab8RN6LI6s94uSQoP_IvEyL9Y554-02EqZDN2eEeqmjv9oigbA",
   pollinations: "pk_mTBE8ryBYKDHl8LK"
 };
 
